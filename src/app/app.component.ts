@@ -49,7 +49,7 @@ export class AppComponent implements OnInit {
      ***** 控制流动
      *******************/
     const  input = fromEvent(document.querySelector('input'), 'input');
-    input.subscribe(event => console.log('等待输入监听: ' + event));
+    input.subscribe(event => console.log('等待输入监听: ' + event)); 
 
 
 
