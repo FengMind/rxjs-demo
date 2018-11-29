@@ -1,6 +1,6 @@
 import { Component, OnInit, OnChanges } from '@angular/core';
-import { of, from, Observable, fromEvent, bindCallback, Subject, observable } from 'rxjs';
-import { InvokeFunctionExpr } from '@angular/compiler';
+import { of, from, Observable, bindCallback, Subject, fromEvent } from 'rxjs';
+import { map, filter, delay, throttleTime, debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -24,7 +24,7 @@ export class AppComponent implements OnInit {
     // 来自Event
     ob = fromEvent(document.querySelector('button'), 'click');
 
-    // 来自回调函数(最后一个参数得是回调函数，比如下面的 cb)
+    // 来自回调函数(函数的最后一个参数得是回调函数，比如下面的 cb)
     ob = bindCallback(this.cb);
     ob(1).subscribe(data => console.log(data));
     // await ob(1).toPromise().then(data => console.log(data));
@@ -34,7 +34,7 @@ export class AppComponent implements OnInit {
      *******************/
     // 在外部产生新事件
     const subject = new Subject();
-    subject.subscribe(data => console.log('通过外部产生观察，并进行订阅:' + data)); // 订阅: 先订阅 - 订阅的是新内容
+    subject.subscribe(data => console.log('在外部产生观察，并进行订阅:' + data)); // 订阅: 先订阅 - 订阅的是新内容
     subject.next('新的一期'); // 装载: 装载新内容
     // ob = subject.asObservable(); // 通过Subject生成Observable
 
@@ -48,17 +48,35 @@ export class AppComponent implements OnInit {
     /*******************
      ***** 控制流动
      *******************/
-    const  input = fromEvent(document.querySelector('input'), 'input');
-    input.subscribe(event => console.log('等待输入监听: ' + event)); 
+    const input = fromEvent(document.querySelector('input'), 'input');
+    ob = from([1, 2, 3]);
+    // 过滤、映射操作
+    ob.pipe(
+      filter(res => res > 1),
+      map((res: any) => {
+        return res * 2;
+      })
+    ).subscribe(res => console.log('控制流 - 过滤、映射: ' + res));
 
+    // 延迟事件
+    ob.pipe(delay(2000)).subscribe(res => console.log('控制流 - 延迟事件: ' + res));
 
+    // 每2秒只能通过一个事件
+    ob.pipe(throttleTime(2000)).subscribe(res => console.log('控制流 - 节流事件: ' + res));
 
+    // 停止输入后200ms方能通过最新的那个事件
+    input
+      .pipe(
+        debounceTime(200),
+        map(event => event.type.length)
+      )
+      .subscribe(value => console.log(value)); // "o" -200ms-> "d"
   }
 
   // 定义回调函数
   cb(x, selfFunc) {
-    setTimeout(() => {
-      selfFunc('回调函数方式转换:' + x);
-    }, 1000);
+    // setTimeout(() => {
+    selfFunc('回调函数方式转换:' + x);
+    // }, 0);
   }
 }
