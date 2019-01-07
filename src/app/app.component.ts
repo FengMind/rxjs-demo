@@ -84,7 +84,7 @@ export class AppComponent implements OnInit {
     // 唯一
     input.pipe(pluck('data'), distinct()).subscribe(res => console.log('产生值 - 只会通过唯一的值: ' + res));
     // 去重 - 不连续相同
-    input.pipe(pluck('data'), distinctUntilChanged()).subscribe(res => console.log('产生值 - 不会传递重复的值: ' + res));
+    input.pipe(pluck('data'), distinctUntilChanged()).subscribe(res => console.log('产生值 - 不会传递连续重复的值: ' + res));
 
     /*******************
      ***** 状态和存储 (State Store)
